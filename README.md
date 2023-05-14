@@ -27,3 +27,7 @@ In my case I store the result in the deploy-instance-ps1 file. You can run it to
 To access the app go to: http://bcserver/BC/?tenant=default
 
 Or you can find this adresse inside the log of the container.
+
+## Hello world application
+
+To deploy the custom extension helloworld. Open VSCode in the helloworld folder and then hit ctrl + f5. For more information see the readme inside the hello world folder.
