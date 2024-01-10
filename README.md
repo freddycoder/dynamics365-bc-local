@@ -31,3 +31,7 @@ Or you can find this adresse inside the log of the container.
 ## Hello world application
 
 To deploy the custom extension helloworld. Open VSCode in the helloworld folder and then hit ctrl + f5. For more information see the readme inside the hello world folder.
+
+## Create a new extension
+
+To create a new extension press ALT+A+L and select the path to the destination folder. (The folder may not exist yet. It will be created automatically.)
