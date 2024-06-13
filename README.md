@@ -35,3 +35,7 @@ To deploy the custom extension helloworld. Open VSCode in the helloworld folder 
 ## Create a new extension
 
 To create a new extension press ALT+A+L and select the path to the destination folder. (The folder may not exist yet. It will be created automatically.)
+
+## CheatSheet
+
+https://github.com/ricardopaiva/cheatsheet/blob/master/business-central-bccontainerhelper-cheat-sheet.md
