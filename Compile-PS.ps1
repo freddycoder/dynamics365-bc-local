@@ -24,8 +24,6 @@ Get-ChildItem -Directory | Where-Object Name -eq 'helloworld' | ForEach-Object {
 		Write-Host "Current Version: " $current
 		
 		$projects.$iterator = $current
-		$modifiedVersion = $projects | ConvertTo-Json -Depth 100
-		$modifiedVersion | Out-File -FilePath ".\version.json"
 		Write-Host "Compiling " $iterator " with version " $current
 
 		Write-Host $iterator
@@ -36,7 +34,7 @@ Get-ChildItem -Directory | Where-Object Name -eq 'helloworld' | ForEach-Object {
 		$registered = ""
 	}
 	catch {
-		Write-Error "Something threw an exception"
+		Write-Warning $_
 	}
 }
 Write-Host "STEP 1 ------ Done"
