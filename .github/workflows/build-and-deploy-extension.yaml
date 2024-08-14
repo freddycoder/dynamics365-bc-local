@@ -1,0 +1,24 @@
+name: Build and Deploy Extension
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Business Central AL
+        uses: microsoft/BCContainerHelper@v1
+        with:
+          bcContainerVersion: '18.3'
+          useLatest: true
+
+      - name: Build extension
+        run: |
+          .\Compile-PS.ps1
