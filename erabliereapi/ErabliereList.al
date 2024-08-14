@@ -57,17 +57,23 @@ page 50102 "Erabliere List"
                     for i := 0 to ErablieresArray.Count - 1 do begin
 
                         ErablieresArray.Get(i, ErabliereToken);
+
                         ErabliereObj := ErabliereToken.AsObject();
 
-                        ErabliereRec.Init();
-
                         ErabliereObj.Get('id', propVal);
-                        ErabliereRec.Validate("Erabliere ID", propVal.AsValue().AsText());
 
-                        ErabliereObj.Get('nom', propVal);
-                        ErabliereRec.Validate("Description", propVal.AsValue().AsText());
+                        // Si l'érable n'existe pas, on le crée
+                        if not ErabliereRec.Get(propVal.AsValue().AsText()) then begin
+                            ErabliereRec.Init();
 
-                        ErabliereRec.Insert();
+                            ErabliereRec.Validate("Erabliere ID", propVal.AsValue().AsText());
+
+                            ErabliereObj.Get('nom', propVal);
+
+                            ErabliereRec.Validate("Description", propVal.AsValue().AsText());
+
+                            ErabliereRec.Insert();
+                        end;
                     end;
                 end;
             }
