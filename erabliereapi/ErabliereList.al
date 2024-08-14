@@ -32,4 +32,45 @@ page 50102 "Erabliere List"
             }
         }
     }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(GetErablieres)
+            {
+                Promoted = true;
+                ApplicationArea = All;
+                Caption = 'Importer Érablieres';
+
+                trigger OnAction()
+                var
+                    ErablieresArray: JsonArray;
+                    ErabliereToken: JsonToken;
+                    ErabliereObj: JsonObject;
+                    ErabliereAPI: CodeUnit "ErabliereAPI";
+                    ErabliereRec: Record "Erablieres";
+                    propVal: JsonToken;
+                    i: Integer;
+                begin
+                    ErablieresArray := ErabliereAPI.GetErabliere();
+                    for i := 0 to ErablieresArray.Count - 1 do begin
+
+                        ErablieresArray.Get(i, ErabliereToken);
+                        ErabliereObj := ErabliereToken.AsObject();
+
+                        ErabliereRec.Init();
+
+                        ErabliereObj.Get('id', propVal);
+                        ErabliereRec.Validate("Erabliere ID", propVal.AsValue().AsText());
+
+                        ErabliereObj.Get('nom', propVal);
+                        ErabliereRec.Validate("Description", propVal.AsValue().AsText());
+
+                        ErabliereRec.Insert();
+                    end;
+                end;
+            }
+        }
+    }
 }
