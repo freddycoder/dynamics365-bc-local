@@ -29,6 +29,17 @@ page 50101 "Erabliere Card"
                 {
                     ApplicationArea = All;
                 }
+
+                field("Duration"; Rec.Duration)
+                {
+                    ApplicationArea = All;
+                }
+
+                field("Duration Text"; Rec.DurationText)
+                {
+                    ApplicationArea = All;
+                    Visible = false;
+                }
             }
         }
     }
