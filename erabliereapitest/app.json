@@ -1,0 +1,51 @@
+{
+  "id": "c89b253a-572b-4f29-ad8f-cde714884f00",
+  "name": "ErabliereAPI-Connector-UnitTest",
+  "publisher": "ErabliereAPI",
+  "version": "1.0.0.0",
+  "brief": "Unit test for the ErabliereAPI connector",
+  "description": "Unit test for the ErabliereAPI connector. Allow to validate parts of the extension.",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "",
+  "dependencies": [
+    {
+      "appId": "dd0be2ea-f733-4d65-bb34-a28f4624fb14",
+      "publisher": "Microsoft",
+      "name": "Library Assert",
+      "version": "22.0.0.0"
+    },
+    {
+      "appId": "23de40a6-dfe8-4f80-80db-d70f83ce8caf",
+      "publisher": "Microsoft",
+      "name": "Test Runner",
+      "version": "22.0.0.0"
+    },
+    {
+      "appId": "a6453545-4f31-481a-8ed3-159374895cbb",
+      "publisher": "ErabliereAPI",
+      "name": "ErabliereAPI-Connector",
+      "version": "1.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "22.0.0.0",
+  "idRanges": [
+    {
+      "from": 50100,
+      "to": 50149
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "11.0",
+  "features": [
+    "NoImplicitWith"
+  ]
+}
