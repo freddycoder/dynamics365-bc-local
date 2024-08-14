@@ -38,7 +38,6 @@ page 50101 "Erabliere Card"
                 field("Duration Text"; Rec.DurationText)
                 {
                     ApplicationArea = All;
-                    Visible = false;
                 }
             }
         }

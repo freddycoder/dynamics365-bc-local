@@ -9,8 +9,8 @@ codeunit 50120 Utils
         type: Text;
         cursor: Integer;
     begin
-        i := 0;
-        cursor := 0;
+        i := 1;
+        cursor := 1;
         DurationUnitValue := 0;
         Duration := Duration.Replace('PT', '');
 
@@ -23,12 +23,11 @@ codeunit 50120 Utils
                 i += 1;
             end;
 
-            i += 1;
-
-            if i >= StrLen(Duration) then
+            if i > StrLen(Duration) then
                 break;
 
             Type := Duration[i];
+            i += 1;
 
             if Type = 'H' then
                 DurationUnitValue += HourToInt(Duration.Substring(cursor, length))
@@ -36,6 +35,8 @@ codeunit 50120 Utils
                 DurationUnitValue += MinuteToInt(Duration.Substring(cursor, length))
             else
                 Error('Invalid duration type');
+
+            cursor := i;
         end;
 
         exit(DurationUnitValue);
