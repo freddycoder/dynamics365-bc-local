@@ -14,9 +14,9 @@ page 50101 "Erabliere Card"
     {
         area(content)
         {
-            group(Reward)
+            group(Erabliere)
             {
-                field("Reward Id"; Rec."Erabliere ID")
+                field("Erabliere Id"; Rec."Erabliere ID")
                 {
                     // ApplicationArea sets the application area that 
                     // applies to the page field and action controls. 
