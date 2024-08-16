@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  Test:
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Run Tests
+        run: |
+          . (Join-Path "." "Tests/runtests.ps1")
+
+      - name: Test AL-Go Workflows
+        run: |
+          try {
+            $errorActionPreference = "Stop"; $ProgressPreference = "SilentlyContinue"; Set-StrictMode -Version 2.0
+            $result = Invoke-Pester @(Get-ChildItem -Path (Join-Path "." "Tests/WorkflowSanitation/*.Test.ps1")) -passthru
+            if ($result.FailedCount -gt 0) {
+              Write-Host "::Error::$($result.FailedCount) tests are failing"
+              $host.SetShouldExit(1)
+            }
+          }
+          catch {
+            Write-Host "::Error::Error when running tests. The Error was $($_.Exception.Message)"
+            $host.SetShouldExit(1)
+          }
