@@ -11,12 +11,8 @@ table 50100 Erablieres
             DataClassification = ToBeClassified;
         }
 
-        // The "Description" field can contain a string 
-        // with up to 250 characters.
         field(2; Description; Text[250])
         {
-            // This property specified that 
-            // this field cannot be left empty.
             NotBlank = true;
         }
 
@@ -35,6 +31,21 @@ table 50100 Erablieres
             begin
                 Duration := Utils.ParseISODuration(DurationText);
             end;
+        }
+
+        field(5; "Invoice Contact"; Code[20])
+        {
+            DataClassification = ToBeClassified;
+        }
+
+        field(6; "Invoice Customer"; Code[20])
+        {
+            DataClassification = ToBeClassified;
+        }
+
+        field(7; "Last Invoice Date"; Date)
+        {
+            DataClassification = ToBeClassified;
         }
     }
 
