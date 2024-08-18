@@ -4,7 +4,7 @@ Connector for the ErabliereAPI project.
 
 ## Links
 
-1. https://www.j3ns.de/d365-business-central/oauth-2-0-in-al/
+1. https://www.j3ns.de/d365 -business-central/oauth-2-0-in-al/
 2. https://learn.microsoft.com/en-us/entra/msal/dotnet/acquiring-tokens/web-apps-apis/confidential-client-assertions
 3. https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication
 4. https://sookocheff.com/post/api/generating-jwt-assertions/

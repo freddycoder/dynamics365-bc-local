@@ -20,6 +20,10 @@ table 50125 "EAPI Setup"
         {
             DataClassification = CustomerContent;
         }
+        field(13; "ErabliereAPI Client Id"; Text[39])
+        {
+            DataClassification = CustomerContent;
+        }
         field(12; "Scope"; Text[150])
         {
             DataClassification = CustomerContent;
@@ -27,10 +31,34 @@ table 50125 "EAPI Setup"
         field(15; "Client Secret"; Text[150])
         {
             DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                if (Rec."Client Certificate" = '') and (Rec."Client Secret" <> '') then
+                    Rec."Authentication Method" := Rec."Authentication Method"::"Client Secret";
+            end;
         }
         field(16; "Client Certificate"; Text[150])
         {
             DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            var
+                CertificateManagement: Codeunit "Certificate Management";
+                Cert: Record "Isolated Certificate";
+            begin
+                if (Rec."Client Certificate" = '') and (Rec."Client Secret" = '') and Cert.FindFirst() then
+                    Rec."Client Certificate" := Cert.Code;
+            end;
+        }
+        field(17; "Client Certificate Password"; Text[150])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(18; "Authentication Method"; Option)
+        {
+            DataClassification = CustomerContent;
+            OptionMembers = "Client Secret","Client Certificate";
         }
         field(20; "API Token"; Blob)
         {

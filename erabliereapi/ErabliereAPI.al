@@ -6,8 +6,17 @@ codeunit 50140 ErabliereAPI
         Response: HttpResponseMessage;
         ResponseText: Text;
         ErablieresObj: JsonArray;
+        Token: Text;
+        HttpAuthUtils: Codeunit "API Web Service";
+        APIConfig: Record "EAPI Setup";
     begin
-        HttpClient.Get('https://erabliereapi.freddycoder.com/Erablieres', Response);
+        APIConfig.FindSet();
+
+        Token := HttpAuthUtils.GetAuthenticationToken(APIConfig, false);
+
+        HttpClient.DefaultRequestHeaders.Add('Authorization', 'Bearer ' + Token);
+
+        HttpClient.Get(APIConfig."API URL" + '/Erablieres', Response);
         if Response.IsSuccessStatusCode then begin
             Response.Content.ReadAs(ResponseText);
 

@@ -47,45 +47,64 @@ codeunit 50126 "API Web Service"
         RequestMessage: HttpRequestMessage;
         RequestContent: HttpContent;
         TokenOutStream: OutStream;
+        Cert: Record "Isolated Certificate";
+        ClientAssertion: Text;
+        HttpAuthUtils: Codeunit "HttpAuthUtils";
     begin
         //Create webservice call
         RequestMessage.Method := 'POST';
+
+        if ApiSetup.Audiance = '' then
+            Error('Please set the audiance parameter in the EAPI Setup Page. Ex: https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/token');
+
         RequestMessage.SetRequestUri(ApiSetup.Audiance);
 
         //Create webservice header
         RequestMessage.GetHeaders(RequestHeader);
 
-        //Payload needed? This might as well be a different implementation!
-        //It's just an example where the credentials are stored as a json payload
+        if ApiSetup."Client Id" = '' then
+            Error('Please set the Client Id parameter in the EAPI Setup Page');
 
-        //Create json payload
-        JObjectRequest.Add('client_id', ApiSetup."Client Id");
-        JObjectRequest.Add('client_secret', ApiSetup."Client Secret");
-        JObjectRequest.WriteTo(AuthPayload);
+        if (ApiSetup."Client Secret" = '') and (ApiSetup."Client Certificate" = '') then
+            Error('Please set the Client Secret or Client Certificate parameter in the EAPI Setup Page');
 
-        //Get Request Content
+        if (ApiSetup.Scope = '') then
+            Error('Please set the Scope parameter in the EAPI Setup Page');
+
+        if ApiSetup."Authentication Method" = ApiSetup."Authentication Method"::"Client Secret" then begin
+            AuthPayload := 'grant_type=client_credentials&client_id=' + ApiSetup."Client Id" + '&client_secret=' + ApiSetup."Client Secret" + '&scope=' + ApiSetup."Scope";
+        end
+        else begin
+            Cert := HttpAuthUtils.GetCertificate(ApiSetup."Client Certificate", ApiSetup."Client Certificate Password");
+
+            ClientAssertion := HttpAuthUtils.ComputeClientAssertion(ApiSetup, Cert);
+
+            AuthPayload := 'grant_type=client_credentials&client_id=' + ApiSetup."Client Id" + '&Scope=' + ApiSetup.Scope + '&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion=' + ClientAssertion
+        end;
+
         RequestContent.WriteFrom(AuthPayload);
 
         RequestContent.GetHeaders(RequestHeader);
+        RequestHeader.Add('charset', 'UTF-8');
         RequestHeader.Remove('Content-Type');
-        RequestHeader.Add('Content-Type', 'application/json');
+        RequestHeader.Add('Content-Type', 'application/x-www-form-urlencoded');
 
         RequestMessage.Content := RequestContent;
 
         //Send webservice query
         WebClient.Send(RequestMessage, ResponseMessage);
 
-        if ResponseMessage.IsSuccessStatusCode() then begin
-            ResponseMessage.Content().ReadAs(ResponseText);
+        ResponseMessage.Content().ReadAs(ResponseText);
 
+        if ResponseMessage.IsSuccessStatusCode() then begin
             if not JObjectResult.ReadFrom(ResponseText) then
-                Error('Error Read JSON');
+                Error('API Web Service Error. Error Read JSON');
 
             TokenResponseText := GetJsonToken(JObjectResult, 'access_token').AsValue().AsText();
-            TokenExpiry := GetJsonToken(JObjectResult, 'expiry_date').AsValue().AsDateTime();
+            TokenExpiry := CurrentDateTime() + GetJsonToken(JObjectResult, 'ext_expires_in').AsValue().AsInteger();
 
         end else
-            Error('Webservice Error');
+            Error('API Web Service Error. Reason: %1 Message: %2', ResponseMessage.ReasonPhrase, ResponseText);
 
         exit(TokenResponseText);
     end;
@@ -93,6 +112,6 @@ codeunit 50126 "API Web Service"
     local procedure GetJsonToken(JsonObject: JsonObject; TokenKey: Text) JsonToken: JsonToken;
     begin
         if not JsonObject.Get(TokenKey, JsonToken) then
-            Error(StrSubstNo('Token %1 not found', TokenKey));
+            Error(StrSubstNo('API Web Service Error. Token %1 not found', TokenKey));
     end;
 }
