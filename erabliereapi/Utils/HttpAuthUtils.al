@@ -27,29 +27,44 @@ codeunit 50148 HttpAuthUtils
         JsonText: Text;
         Base64Text: Text;
         Base64: Codeunit "Base64 Convert";
-
-        Base64PadCharacter: Text[1];
-        Base64Character62: Text[1];
-        Base64Character63: Text[1];
-        Base64UrlCharacter62: Text[1];
-        Base64UrlCharacter63: Text[1];
-
-        ArrayToken: List of [Text];
     begin
-        Base64PadCharacter := '=';
-        Base64Character62 := '+';
-        Base64Character63 := '/';
-        Base64UrlCharacter62 := '-';
-        Base64UrlCharacter63 := '_';
-
         Base64Text := Base64.ToBase64(Text);
 
-        ArrayToken := Base64Text.Split(Base64PadCharacter);
-        Base64Text := ArrayToken.Get(1);
-        Base64Text := Base64Text.Replace(Base64Character62, Base64UrlCharacter62);
-        Base64Text := Base64Text.Replace(Base64Character63, Base64UrlCharacter63);
+        Base64Text := EncodeUrl(Base64Text);
 
         exit(Base64Text);
+    end;
+
+    procedure EncodeUrl(Text: Text): Text
+    var
+        Base64Text: Text;
+    begin
+        Base64Text := Text.Replace('+', '-');
+        Base64Text := Base64Text.Replace('/', '_');
+        Base64Text := Base64Text.Replace('=', '');
+
+        exit(Base64Text);
+    end;
+
+    procedure Computext5sha256(Cert: Record "Isolated Certificate"; SignatureKey: Codeunit "Signature Key"): Text
+    var
+        CertificateManagment: Codeunit "Certificate Management";
+        CryptographyManagement: Codeunit "Cryptography Management";
+        HashAlgorithmType: Option MD5,SHA1,SHA256,SHA384,SHA512;
+        certRawData: Text;
+        certHash: Text;
+        certHashBase64: Text;
+        x5t: Text;
+    begin
+        CertificateManagment.GetCertPrivateKey(Cert, SignatureKey);
+
+        certRawData := CertificateManagment.GetRawCertDataAsBase64String(Cert);
+
+        certHash := CryptographyManagement.GenerateHashAsBase64String(certRawData, 2);
+
+        x5t := EncodeUrl(certHash);
+
+        exit(x5t);
     end;
 
     procedure ComputeClientAssertion(ApiSetup: Record "EAPI Setup"; Cert: Record "Isolated Certificate"): Text
@@ -66,19 +81,24 @@ codeunit 50148 HttpAuthUtils
         Utils: Codeunit "Utils";
         CertificateManagment: Codeunit "Certificate Management";
         CryptographyManagement: Codeunit "Cryptography Management";
+        RSA: Codeunit RSACryptoServiceProvider;
         SignatureKey: Codeunit "Signature Key";
         HashAlgorithm: Enum "Hash Algorithm";
-
-        certHash: Text;
         x5t: Text;
-        HashAlgorithmType: Option HMACMD5,HMACSHA1,HMACSHA256,HMACSHA384,HMACSHA512;
+        b64: Codeunit "Base64 Convert";
+        outStream: OutStream;
+        inStream: InStream;
+        tempBlob: Codeunit "Temp Blob";
+        TypeHelper: Codeunit "Type Helper";
     begin
-        CertificateManagment.GetCertPrivateKey(Cert, SignatureKey);
-
         JwtHeader.Add('alg', 'RS256');
         JwtHeader.Add('typ', 'JWT');
-        certHash := CryptographyManagement.GenerateHash(CertificateManagment.GetRawCertDataAsBase64String(Cert), HashAlgorithmType::HMACSHA256);
-        x5t := EncodeUrlBase64(certHash);
+
+        if ApiSetup."x5t#S256" = '' then
+            x5t := Computext5sha256(Cert, SignatureKey)
+        else
+            x5t := ApiSetup."x5t#S256";
+
         JwtHeader.Add('x5t#S256', x5t);
 
         JwtHeaderBase64 := EncodeUrlBase64(JwtHeader);
@@ -94,29 +114,30 @@ codeunit 50148 HttpAuthUtils
 
         JwtTokenText := JwtHeaderBase64 + '.' + JwtPayloadBase64;
 
-        JwtSignature := CreateJwtSignature(JwtTokenText, SignatureKey);
+        JwtSignature := CreateJwtSignature(JwtTokenText, Cert);
 
         JwtTokenText := JwtTokenText + '.' + JwtSignature;
 
         exit(JwtTokenText);
     end;
 
-    procedure CreateJwtSignature(JwtTokenText: Text; SignKey: Codeunit "Signature Key"): Text
+    procedure CreateJwtSignature(JwtTokenText: Text; Cert: Record "Isolated Certificate"): Text
     var
         TempBlob: Codeunit "Temp Blob";
         JwtSignature: Text;
-        JwtTokenBase64: Text;
         JwtSignatureBase64: Text;
         CryptographyManagement: Codeunit "Cryptography Management";
+        CertificateManagement: Codeunit "Certificate Management";
         HashAlgorithm: Enum "Hash Algorithm";
         OutStream: OutStream;
         InStream: InStream;
-        TypeHelper: Codeunit "Type Helper";
+        SignKey: Codeunit "Signature Key";
     begin
         OutStream := TempBlob.CreateOutStream();
+        CertificateManagement.GetCertPrivateKey(Cert, SignKey);
         CryptographyManagement.SignData(JwtTokenText, SignKey, HashAlgorithm::SHA256, OutStream);
         InStream := TempBlob.CreateInStream();
-        JwtSignature := TypeHelper.ReadAsTextWithSeparator(InStream, '');
+        InStream.ReadText(JwtSignature);
         JwtSignatureBase64 := EncodeUrlBase64(JwtSignature);
         exit(JwtSignatureBase64);
     end;

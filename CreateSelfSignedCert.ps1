@@ -1,6 +1,10 @@
 Write-Host "Generate a new self-signed certificate"
 $cert = New-SelfSignedCertificate -CertStoreLocation Cert:\CurrentUser\My -DnsName "localhost" -KeySpec KeyExchange
 
+if (!(Test-Path "C:\certs")) {
+    New-Item -Path "C:\" -Name "certs" -ItemType "directory"
+}
+
 # Export the certificate as a PFX file
 $certPath = "C:\certs\bc-erabliereapi-connector-certificate.pfx"
 $certPassword = ConvertTo-SecureString -String "1234" -Force -AsPlainText

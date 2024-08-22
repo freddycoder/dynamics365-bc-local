@@ -1,16 +1,8 @@
 page 50102 "Erabliere List"
 {
-    // Specify that this page will be a list page.
     PageType = List;
-
-    // The page will be part of the "Lists" group of search results.
     UsageCategory = Lists;
-
-    // The data of this page is taken from the "Reward" table.
     SourceTable = Erablieres;
-
-    // The "CardPageId" is set to the Reward Card previously created.
-    // This will allow users to open records from the list in the "Reward Card" page.
     CardPageId = "Erabliere Card";
 
     layout
@@ -47,46 +39,41 @@ page 50102 "Erabliere List"
                 var
                     ErablieresArray: JsonArray;
                     ErabliereToken: JsonToken;
-                    ErabliereObj: JsonObject;
                     ErabliereAPI: CodeUnit "ErabliereAPI";
                     ErabliereRec: Record "Erablieres";
-                    propVal: JsonToken;
+                    propVal: Text;
                     i: Integer;
                     count: Integer;
-                    Dialog: Codeunit "DynDialog";
                 begin
-                    ErablieresArray := ErabliereAPI.GetErabliere();
+                    ErablieresArray := ErabliereAPI.GetAdminErabliere();
                     count := ErablieresArray.Count;
                     Dialog.Open(count);
                     for i := 0 to ErablieresArray.Count - 1 do begin
 
                         ErablieresArray.Get(i, ErabliereToken);
 
-                        ErabliereObj := ErabliereToken.AsObject();
-
-                        ErabliereObj.Get('id', propVal);
+                        propVal := Json.GetText(ErabliereToken, 'id');
 
                         // Si l'érable n'existe pas, on le crée
-                        if not ErabliereRec.Get(propVal.AsValue().AsText()) then begin
+                        if not ErabliereRec.Get(propVal) then begin
                             ErabliereRec.Init();
 
-                            ErabliereRec.Validate("Erabliere ID", propVal.AsValue().AsText());
+                            ErabliereRec.Validate("Erabliere ID", propVal);
 
-                            ErabliereObj.Get('nom', propVal);
+                            propVal := Json.GetText(ErabliereToken, 'nom');
 
-                            ErabliereRec.Validate("Description", propVal.AsValue().AsText());
+                            ErabliereRec.Validate("Description", propVal);
 
                             ErabliereRec.Insert();
 
-                            Dialog.Update(i + 1, propVal.AsValue().AsText() + ' inséré');
+                            Dialog.Update(i + 1, propVal + ' inséré');
                         end
                         else begin
-                            ErabliereObj.Get('nom', propVal);
+                            propVal := Json.GetText(ErabliereToken, 'nom');
 
-                            Dialog.Update(i + 1, propVal.AsValue().AsText() + ' existe déjà');
+                            Dialog.Update(i + 1, propVal + ' existe déjà');
                         end;
                     end;
-                    Dialog.Close();
                     Dialog.PrettyMessage('Importation terminée');
                 end;
             }
@@ -101,28 +88,29 @@ page 50102 "Erabliere List"
                 var
                     ErablieresArray: JsonArray;
                     ErabliereToken: JsonToken;
-                    ErabliereObj: JsonObject;
                     ErabliereAPI: CodeUnit "ErabliereAPI";
                     ErabliereRec: Record "Erablieres";
-                    propVal: JsonToken;
+                    propVal: Text;
                     i: Integer;
                     count: Integer;
-                    DynDialog: Codeunit "DynDialog";
                 begin
-                    ErablieresArray := ErabliereAPI.GetErabliere();
+                    ErablieresArray := ErabliereAPI.GetAdminErabliere();
                     count := ErablieresArray.Count;
-                    DynDialog.Open(count);
+                    Dialog.Open(count);
                     for i := 0 to count - 1 do begin
-                        Sleep(250);
+                        Sleep(125);
                         ErablieresArray.Get(i, ErabliereToken);
-                        ErabliereToken.AsObject().Get('nom', propVal);
-                        DynDialog.Update(i + 1, propVal.AsValue().AsText());
+                        propVal := Json.GetText(ErabliereToken, 'nom');
+                        Dialog.Update(i + 1, propVal);
                     end;
-                    Sleep(1250);
-                    DynDialog.Close();
-                    DynDialog.PrettyMessage('Prévisualisation terminée');
+                    Sleep(625);
+                    Dialog.PrettyMessage('Prévisualisation terminée');
                 end;
             }
         }
     }
+
+    var
+        Dialog: Codeunit "DynDialog";
+        Json: Codeunit "Json";
 }

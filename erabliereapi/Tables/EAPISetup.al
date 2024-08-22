@@ -38,7 +38,11 @@ table 50125 "EAPI Setup"
                     Rec."Authentication Method" := Rec."Authentication Method"::"Client Secret";
             end;
         }
-        field(16; "Client Certificate"; Text[150])
+        field(16; "x5t#S256"; Text[150])
+        {
+            DataClassification = CustomerContent;
+        }
+        field(17; "Client Certificate"; Text[150])
         {
             DataClassification = CustomerContent;
 
@@ -51,11 +55,11 @@ table 50125 "EAPI Setup"
                     Rec."Client Certificate" := Cert.Code;
             end;
         }
-        field(17; "Client Certificate Password"; Text[150])
+        field(18; "Client Certificate Password"; Text[150])
         {
             DataClassification = CustomerContent;
         }
-        field(18; "Authentication Method"; Option)
+        field(19; "Authentication Method"; Option)
         {
             DataClassification = CustomerContent;
             OptionMembers = "Client Secret","Client Certificate";

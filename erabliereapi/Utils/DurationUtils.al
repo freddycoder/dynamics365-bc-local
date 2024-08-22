@@ -1,5 +1,15 @@
 codeunit 50120 Utils
 {
+    procedure ConvertStringToDate(DateString: Text): Date
+    var
+        DateValue: Date;
+    begin
+        if Evaluate(DateValue, DateString, 0) then
+            exit(DateValue)
+        else
+            Error('Invalid date format: %1', DateString);
+    end;
+
     procedure ParseISODuration(Duration: Text): Duration
     var
         DurationUnitValue: Integer;

@@ -31,6 +31,10 @@ codeunit 50130 DynDialog
         Dialog.Update(number, Texts.Get(number));
     end;
 
+    /// <summary>
+    /// Display the text from the dialog into a message box.
+    /// The dialog will be closed if it was open.
+    /// </summary>
     procedure PrettyMessage(text: Text)
     var
         i: Integer;
@@ -40,7 +44,19 @@ codeunit 50130 DynDialog
             Close();
         for i := 1 to Texts.Count do
             template += Texts.Get(i) + '\';
-        Message(text + '\' + template, Texts);
+        Message(text + '\' + template);
+    end;
+
+    procedure PrettyConfirm(text: Text): Boolean
+    var
+        i: Integer;
+        template: Text;
+    begin
+        if IsOpen then
+            Close();
+        for i := 1 to Texts.Count do
+            template += Texts.Get(i) + '\';
+        exit(Confirm(text + '\' + template));
     end;
 
     var
