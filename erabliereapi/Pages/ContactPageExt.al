@@ -2,7 +2,7 @@ pageextension 50120 ContactPageExt extends "Contact List"
 {
     layout
     {
-        // Add changes to page layout here
+
     }
 
     actions
@@ -42,6 +42,7 @@ pageextension 50120 ContactPageExt extends "Contact List"
         uniqueName: Text;
         i: Integer;
         count: Integer;
+        modified: Boolean;
     begin
         ContactsArray := ErabliereAPI.GetAdminContact();
         count := ContactsArray.Count;
@@ -49,6 +50,7 @@ pageextension 50120 ContactPageExt extends "Contact List"
         for i := 0 to count - 1 do begin
             ContactsArray.Get(i, ContactToken);
             uniqueName := Json.GetText(ContactToken, 'uniqueName');
+            modified := false;
 
             if uniqueName.Contains('@') then begin
                 ContactRec.SetFilter("ErabliereAPI Unique Name", uniqueName);
@@ -57,16 +59,32 @@ pageextension 50120 ContactPageExt extends "Contact List"
                     SynErabliereAPIContact(ContactRec, ContactToken);
                     if not Preview then
                         ContactRec.Modify(true);
-                    Dialog.Update(i + 1, StrSubstNo('Contact %1 was updated', uniqueName));
-                end
-                else begin
+                    Dialog.Update(i + 1, StrSubstNo('Contact %1 %2 was updated', ContactRec."No.", uniqueName));
+                    modified := true;
+                end;
+
+                ContactRec.SetFilter("ErabliereAPI Unique Name", '');
+                ContactRec.SetFilter("E-Mail", Json.GetText(ContactToken, 'email'));
+
+                if ContactRec.FindFirst() then begin
+                    SynErabliereAPIContact(ContactRec, ContactToken);
+                    if not Preview then
+                        ContactRec.Modify(true);
+                    Dialog.Update(i + 1, StrSubstNo('Contact %1 %2 updated from an existing customer', ContactRec."No.", uniqueName));
+                    modified := true;
+                end;
+
+                if not modified then begin
                     ContactRec.Init();
                     ContactRec.Type := ContactRec.Type::Person;
                     SynErabliereAPIContact(ContactRec, ContactToken);
                     ContactRec.CheckDuplicates();
-                    if not Preview then
+                    if not Preview then begin
+                        ContactRec."No." := ContactRec.CreateCustomer();
                         ContactRec.Insert(true);
-                    Dialog.Update(i + 1, StrSubstNo('Contact %1 was created', uniqueName));
+                    end;
+
+                    Dialog.Update(i + 1, StrSubstNo('Contact %1 created', ContactRec."No." + ' ' + uniqueName));
                 end;
             end
             else begin
@@ -74,9 +92,11 @@ pageextension 50120 ContactPageExt extends "Contact List"
             end;
         end;
         if Preview then
-            Dialog.PrettyConfirm('Do you confirm the import data?')
+            exit(Dialog.PrettyConfirm('Do you confirm the import data?'))
         else
             Dialog.PrettyMessage('Importation terminée');
+
+        exit(true);
     end;
 
     procedure SynErabliereAPIContact(var ContactRec: Record "Contact"; var ContactToken: JsonToken)

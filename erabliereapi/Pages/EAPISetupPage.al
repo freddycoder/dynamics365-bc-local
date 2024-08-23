@@ -2,8 +2,9 @@ page 50132 "EAPI Setup Page"
 {
     PageType = Card;
     ApplicationArea = All;
-    UsageCategory = Tasks;
+    UsageCategory = Administration;
     SourceTable = "EAPI Setup";
+    CardPageId = "EAPI Setup Page";
 
     layout
     {

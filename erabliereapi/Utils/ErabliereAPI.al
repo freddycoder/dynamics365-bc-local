@@ -27,7 +27,7 @@ codeunit 50140 ErabliereAPI
     begin
         APIConfig.FindSet();
 
-        Token := HttpAuthUtils.GetAuthenticationToken(APIConfig, true);
+        Token := HttpAuthUtils.GetAuthenticationToken(APIConfig, APIConfig."Force Token Renewal");
 
         HttpClient.DefaultRequestHeaders.Add('Authorization', 'Bearer ' + Token);
 

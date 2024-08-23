@@ -1,7 +1,8 @@
 page 50134 "EAPI Setup List"
 {
+    ApplicationArea = All;
     PageType = List;
-    UsageCategory = Lists;
+    UsageCategory = Administration;
     SourceTable = "EAPI Setup";
     CardPageId = "EAPI Setup List";
 

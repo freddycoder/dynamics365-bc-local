@@ -72,6 +72,10 @@ table 50125 "EAPI Setup"
         {
             DataClassification = SystemMetadata;
         }
+        field(26; "Force Token Renewal"; Boolean)
+        {
+            DataClassification = CustomerContent;
+        }
     }
 
     keys

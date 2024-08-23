@@ -101,7 +101,7 @@ codeunit 50126 "API Web Service"
                 Error('API Web Service Error. Error Read JSON');
 
             TokenResponseText := GetJsonToken(JObjectResult, 'access_token').AsValue().AsText();
-            TokenExpiry := CurrentDateTime() + GetJsonToken(JObjectResult, 'ext_expires_in').AsValue().AsInteger();
+            TokenExpiry := CurrentDateTime() + GetJsonToken(JObjectResult, 'ext_expires_in').AsValue().AsInteger() * 1000;
 
         end else
             Error('API Web Service Error. Reason: %1 Message: %2', ResponseMessage.ReasonPhrase, ResponseText);
