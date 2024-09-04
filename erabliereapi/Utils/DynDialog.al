@@ -5,10 +5,12 @@ codeunit 50130 DynDialog
         dialogTemplate: Text;
         i: Integer;
     begin
-        Texts.RemoveRange(1, Texts.Count);
+        Description.RemoveRange(1, Description.Count);
         for i := 1 to n do begin
             dialogTemplate += '#' + Format(i) + ' ';
-            Texts.Add('');
+            Name.Add('');
+            Error.Add('');
+            Description.Add('');
         end;
         Dialog.Open(dialogTemplate);
         IsOpen := true;
@@ -20,16 +22,28 @@ codeunit 50130 DynDialog
         IsOpen := false;
     end;
 
-    procedure Update(number: Integer; text: Text)
+    procedure UpdateName(number: Integer; text: Text)
     begin
-        Texts.Set(number, text);
-        Dialog.Update(number, text);
+        Name.Set(number, text);
+        Dialog.Update(number, Name.Get(number) + ' ' + Error.Get(number) + ' ' + Description.Get(number));
+    end;
+
+    procedure UpdateError(number: Integer; text: Text)
+    begin
+        Error.Set(number, text);
+        Dialog.Update(number, Name.Get(number) + ' ' + Error.Get(number) + ' ' + Description.Get(number));
+    end;
+
+    procedure UpdateDescription(number: Integer; text: Text)
+    begin
+        Description.Set(number, text);
+        Dialog.Update(number, Name.Get(number) + ' ' + Error.Get(number) + ' ' + Description.Get(number));
     end;
 
     procedure UpdateAppend(number: Integer; text: Text)
     begin
-        Texts.Set(number, Texts.Get(number) + text);
-        Dialog.Update(number, Texts.Get(number));
+        Description.Set(number, Description.Get(number) + text);
+        Dialog.Update(number, Name.Get(number) + ' ' + Error.Get(number) + ' ' + Description.Get(number));
     end;
 
     /// <summary>
@@ -43,8 +57,8 @@ codeunit 50130 DynDialog
     begin
         if IsOpen then
             Close();
-        for i := 1 to Texts.Count do
-            template += Texts.Get(i) + '\';
+        for i := 1 to Description.Count do
+            template += Name.Get(i) + ' ' + Error.Get(i) + ' ' + Description.Get(i) + '\';
         Message(text + '\' + template);
     end;
 
@@ -55,13 +69,36 @@ codeunit 50130 DynDialog
     begin
         if IsOpen then
             Close();
-        for i := 1 to Texts.Count do
-            template += Texts.Get(i) + '\';
+        for i := 1 to Description.Count do
+            template += Name.Get(i) + ' ' + Error.Get(i) + ' ' + Description.Get(i) + '\';
         exit(Confirm(text + '\' + template));
+    end;
+
+    procedure DisplayAsPreviewPage()
+    var
+        i: Integer;
+        template: Record "Preview" temporary;
+    begin
+        if IsOpen then
+            Close();
+        for i := 1 to Description.Count do begin
+            template."No" := i;
+            template.Name := Name.Get(i);
+            template.Error := Error.Get(i);
+            template.Description := Description.Get(i);
+            template.Insert();
+        end;
+
+        template.SetCurrentKey(Error);
+        template.SetAscending(Error, true);
+
+        Page.Run(Page::PreviewPage, template);
     end;
 
     var
         Dialog: Dialog;
-        Texts: List of [Text];
+        Name: List of [Text];
+        Error: List of [Text];
+        Description: List of [Text];
         IsOpen: Boolean;
 }

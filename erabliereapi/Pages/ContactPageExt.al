@@ -59,7 +59,7 @@ pageextension 50120 ContactPageExt extends "Contact List"
                     SynErabliereAPIContact(ContactRec, ContactToken);
                     if not Preview then
                         ContactRec.Modify(true);
-                    Dialog.Update(i + 1, StrSubstNo('Contact %1 %2 was updated', ContactRec."No.", uniqueName));
+                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 %2 was updated', ContactRec."No.", uniqueName));
                     modified := true;
                 end;
 
@@ -70,7 +70,7 @@ pageextension 50120 ContactPageExt extends "Contact List"
                     SynErabliereAPIContact(ContactRec, ContactToken);
                     if not Preview then
                         ContactRec.Modify(true);
-                    Dialog.Update(i + 1, StrSubstNo('Contact %1 %2 updated from an existing customer', ContactRec."No.", uniqueName));
+                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 %2 updated from an existing customer', ContactRec."No.", uniqueName));
                     modified := true;
                 end;
 
@@ -84,11 +84,11 @@ pageextension 50120 ContactPageExt extends "Contact List"
                         ContactRec.Insert(true);
                     end;
 
-                    Dialog.Update(i + 1, StrSubstNo('Contact %1 created', ContactRec."No." + ' ' + uniqueName));
+                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 created', ContactRec."No." + ' ' + uniqueName));
                 end;
             end
             else begin
-                Dialog.Update(i + 1, StrSubstNo('Device %1 was not imported as a contact', uniqueName));
+                Dialog.UpdateDescription(i + 1, StrSubstNo('Device %1 was not imported as a contact', uniqueName));
             end;
         end;
         if Preview then
