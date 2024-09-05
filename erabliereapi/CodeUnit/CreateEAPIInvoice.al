@@ -74,6 +74,7 @@ codeunit 50102 CreateEAPIInvoice
         // Initialize a new Sales Invoice header
         SalesHeader.Init();
         SalesHeader."No. Series" := 'S-INV';
+        SalesHeader.Invoice := true;
         SalesHeader."Document Type" := SalesHeader."Document Type"::Invoice;
         SalesHeader."Posting Date" := WorkDate();
         SalesHeader."Due Date" := WorkDate() + 30;
@@ -98,6 +99,7 @@ codeunit 50102 CreateEAPIInvoice
         SalesHeader."Currency Code" := Customer."Currency Code";
         SalesHeader."Payment Terms Code" := Customer."Payment Terms Code";
         SalesHeader."Payment Method Code" := Customer."Payment Method Code";
+        SalesHeader."Shortcut Dimension 1 Code" := 'ERABLIEREAPI';
         if Preview then begin
             // validate the Sell-to Customer No. field
             if not Customer.Get(SalesHeader."Sell-to Customer No.") then begin
@@ -114,24 +116,23 @@ codeunit 50102 CreateEAPIInvoice
             SalesLine."Document No." := SalesHeader."No.";
             SalesLine.Type := SalesLine.Type::Item;
             SalesLine.Validate("No.", '1006');
-            SalesLine.Quantity := 1;
-            SalesLine."Line No." := 10000;
-            SalesLine.UpdateAmounts();
             SalesLine.Insert(true);
+            SalesLine.Validate(Quantity, 1);
+            SalesLine.CalcLineAmount();
+            SalesLine.Modify(true);
 
             SalesLine.Init();
             SalesLine."Document Type" := SalesLine."Document Type"::Invoice;
             SalesLine."Document No." := SalesHeader."No.";
             SalesLine.Type := SalesLine.Type::Item;
-            SalesLine."Line No." := 10001;
+            SalesLine.Validate("Line No.", 10001);
             SalesLine.Validate("No.", '1007');
-            SalesLine.Quantity := CountErabliere;
-            SalesLine.UpdateAmounts();
             SalesLine.Insert(true);
+            SalesLine.Validate(Quantity, CountErabliere);
+            SalesLine.CalcLineAmount();
+            SalesLine.Modify(true);
 
-            // Update the Sales Invoice header with the total amount
-            // SalesHeader.Validate("Amount", SalesLine.Amount);
-            // SalesHeader.Modify(true);
+            SalesHeader.Modify(true);
         end;
     end;
 }

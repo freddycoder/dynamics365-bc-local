@@ -84,6 +84,7 @@ codeunit 50130 DynDialog
         if IsOpen then
             Close();
         for i := 1 to Description.Count do begin
+            template.Init();
             template."No" := i;
             template.Name := Name.Get(i);
             template.Error := Error.Get(i);
