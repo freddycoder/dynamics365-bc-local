@@ -1,5 +1,13 @@
 codeunit 50102 CreateEAPIInvoice
 {
+    Description = 'Code unit to create EAPI invoices';
+    Access = Public;
+
+    trigger OnRun()
+    begin
+        CreateSalesInvoices(false);
+    end;
+
     procedure CreateSalesInvoices(Preview: Boolean): Boolean
     var
         ErablieresRec: Record "Erablieres";
