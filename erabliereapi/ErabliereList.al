@@ -79,18 +79,18 @@ page 50102 "Erabliere List"
                 end;
             }
 
-            action(CreateInvoice)
+            action(CreateInvoices)
             {
                 Promoted = true;
                 PromotedCategory = Process;
                 ApplicationArea = All;
-                Caption = 'Create Invoice';
+                Caption = 'Create Invoices';
 
                 trigger OnAction()
                 var
                     createEAPIInvoice: Codeunit "CreateEAPIInvoice";
                 begin
-                    createEAPIInvoice.CreateSalesInvoiceWorkflow(True);
+                    createEAPIInvoice.CreateSalesInvoices(True);
                 end;
             }
         }

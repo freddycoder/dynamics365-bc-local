@@ -57,7 +57,7 @@ page 50100 PreviewPage
                     createEAPIInvoice: Codeunit CreateEAPIInvoice;
                     invoices: Page "Sales Invoice List";
                 begin
-                    if createEAPIInvoice.CreateSalesInvoiceWorkflow(false) then begin
+                    if createEAPIInvoice.CreateSalesInvoices(false) then begin
                         if Dialog.Confirm('Do you want to oepn the invoices page?') then begin
                             invoices.Run();
                         end;
@@ -66,13 +66,5 @@ page 50100 PreviewPage
                 end;
             }
         }
-
-        // area(Promoted)
-        // {
-        //     actionref("Create Invoice")
-        //     {
-
-        //     }
-        // }
     }
 }

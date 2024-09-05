@@ -5,7 +5,9 @@ codeunit 50130 DynDialog
         dialogTemplate: Text;
         i: Integer;
     begin
+        Name.RemoveRange(1, Name.Count);
         Description.RemoveRange(1, Description.Count);
+        Error.RemoveRange(1, Error.Count);
         for i := 1 to n do begin
             dialogTemplate += '#' + Format(i) + ' ';
             Name.Add('');
