@@ -1,118 +1,55 @@
-pageextension 50120 ContactPageExt extends "Contact List"
+pageextension 50103 MyExtension extends "Contact Card"
 {
     layout
     {
-
-    }
-
-    actions
-    {
-        // Import contact from ErabliereAPI
-        addafter("Export Contact")
+        addafter(General)
         {
-            action("Import from ErabliereAPI")
+            group("ErabliereAPI")
             {
-                Promoted = true;
-                PromotedCategory = Process;
-                ApplicationArea = All;
-                Caption = 'Import Contacts';
-                ToolTip = 'Import contacts from ErabliereAPI';
-                Image = Import;
+                field("ErabliereAPI Unique Name"; Rec."ErabliereAPI Unique Name")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the unique name of the contact in ErabliereAPI.';
+                }
 
-                trigger OnAction()
-                var
-                    result: Boolean;
-                begin
-                    result := ImportContactsFromErabliereAPI(True);
+                field("ErabliereAPI Account Type"; Rec."ErabliereAPI Account Type")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the account type of the contact in ErabliereAPI.';
+                }
 
-                    if result then begin
-                        result := ImportContactsFromErabliereAPI(False);
-                    end;
-                end;
+                field("ErabliereAPI Stripe ID"; Rec."ErabliereAPI Stripe ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the stripe ID of the contact in ErabliereAPI.';
+                }
+
+                field("ErabliereAPI Ext. Account Url"; Rec."ErabliereAPI Ext. Account Url")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the external account URL of the contact in ErabliereAPI.';
+                }
+
+                field("ErabliereAPI Creation Time"; Rec."ErabliereAPI Creation Time")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the creation time of the contact in ErabliereAPI.';
+                }
+
+                field("ErabliereAPI Last Update Time"; Rec."ErabliereAPI Last Update Time")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifie the last update time of the contact in ErabliereAPI.';
+                }
             }
         }
     }
 
-    procedure ImportContactsFromErabliereAPI(Preview: Boolean): Boolean
-    var
-        ErabliereAPI: CodeUnit "ErabliereAPI";
-        ContactRec: Record "Contact";
-        ContactsArray: JsonArray;
-        ContactToken: JsonToken;
-        uniqueName: Text;
-        i: Integer;
-        count: Integer;
-        modified: Boolean;
-    begin
-        ContactsArray := ErabliereAPI.GetAdminContact();
-        count := ContactsArray.Count;
-        Dialog.Open(count);
-        for i := 0 to count - 1 do begin
-            ContactsArray.Get(i, ContactToken);
-            uniqueName := Json.GetText(ContactToken, 'uniqueName');
-            modified := false;
-
-            if uniqueName.Contains('@') then begin
-                ContactRec.SetFilter("ErabliereAPI Unique Name", uniqueName);
-
-                if ContactRec.FindFirst() then begin
-                    SynErabliereAPIContact(ContactRec, ContactToken);
-                    if not Preview then
-                        ContactRec.Modify(true);
-                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 %2 was updated', ContactRec."No.", uniqueName));
-                    modified := true;
-                end;
-
-                ContactRec.SetFilter("ErabliereAPI Unique Name", '');
-                ContactRec.SetFilter("E-Mail", Json.GetText(ContactToken, 'email'));
-
-                if ContactRec.FindFirst() then begin
-                    SynErabliereAPIContact(ContactRec, ContactToken);
-                    if not Preview then
-                        ContactRec.Modify(true);
-                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 %2 updated from an existing customer', ContactRec."No.", uniqueName));
-                    modified := true;
-                end;
-
-                if not modified then begin
-                    ContactRec.Init();
-                    ContactRec.Type := ContactRec.Type::Person;
-                    SynErabliereAPIContact(ContactRec, ContactToken);
-                    ContactRec.CheckDuplicates();
-                    if not Preview then begin
-                        ContactRec."No." := ContactRec.CreateCustomer();
-                        ContactRec.Insert(true);
-                    end;
-
-                    Dialog.UpdateDescription(i + 1, StrSubstNo('Contact %1 created', ContactRec."No." + ' ' + uniqueName));
-                end;
-            end
-            else begin
-                Dialog.UpdateDescription(i + 1, StrSubstNo('Device %1 was not imported as a contact', uniqueName));
-            end;
-        end;
-        if Preview then
-            exit(Dialog.PrettyConfirm('Do you confirm the import data?'))
-        else
-            Dialog.PrettyMessage('Importation terminée');
-
-        exit(true);
-    end;
-
-    procedure SynErabliereAPIContact(var ContactRec: Record "Contact"; var ContactToken: JsonToken)
-    begin
-        ContactRec.Validate(Name, Json.GetText(ContactToken, 'name'));
-        ContactRec.Validate("ErabliereAPI Unique Name", Json.GetText(ContactToken, 'uniqueName'));
-        ContactRec.Validate("E-Mail", Json.GetText(ContactToken, 'email'));
-        ContactRec.Validate("E-Mail 2", Json.GetText(ContactToken, 'secondaryEmail'));
-        ContactRec.Validate("ErabliereAPI Account Type", Json.GetText(ContactToken, 'accountType'));
-        ContactRec.Validate("ErabliereAPI Stripe ID", Json.GetText(ContactToken, 'stripeId'));
-        ContactRec.Validate("ErabliereAPI Ext. Account Url", Json.GetText(ContactToken, 'externalAccountUrl'));
-        ContactRec.Validate("ErabliereAPI Creation Time", Json.GetDate(ContactToken, 'creationTime'));
-        ContactRec.Validate("ErabliereAPI Last Update Time", Json.GetDate(ContactToken, 'lastAccessTime'));
-    end;
+    actions
+    {
+        // Add changes to page actions here
+    }
 
     var
-        Dialog: Codeunit "DynDialog";
-        Json: Codeunit "Json";
+        myInt: Integer;
 }
