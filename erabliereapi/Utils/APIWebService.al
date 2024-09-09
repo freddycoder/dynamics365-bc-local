@@ -47,7 +47,6 @@ codeunit 50126 "API Web Service"
         RequestMessage: HttpRequestMessage;
         RequestContent: HttpContent;
         TokenOutStream: OutStream;
-        Cert: Record "Isolated Certificate";
         ClientAssertion: Text;
         HttpAuthUtils: Codeunit "HttpAuthUtils";
     begin
@@ -65,7 +64,7 @@ codeunit 50126 "API Web Service"
         if ApiSetup."Client Id" = '' then
             Error('Please set the Client Id parameter in the EAPI Setup Page');
 
-        if (ApiSetup."Client Secret" = '') and (ApiSetup."Client Certificate" = '') then
+        if (ApiSetup."Client Secret" = '') and (ApiSetup.GetCertificateBase64() = '') then
             Error('Please set the Client Secret or Client Certificate parameter in the EAPI Setup Page');
 
         if (ApiSetup.Scope = '') then
@@ -75,9 +74,7 @@ codeunit 50126 "API Web Service"
             AuthPayload := 'grant_type=client_credentials&client_id=' + ApiSetup."Client Id" + '&client_secret=' + ApiSetup."Client Secret" + '&scope=' + ApiSetup."Scope";
         end
         else begin
-            Cert := HttpAuthUtils.GetCertificate(ApiSetup."Client Certificate", ApiSetup."Client Certificate Password");
-
-            ClientAssertion := HttpAuthUtils.ComputeClientAssertion(ApiSetup, Cert);
+            ClientAssertion := HttpAuthUtils.ComputeClientAssertion(ApiSetup);
 
             AuthPayload := 'grant_type=client_credentials&client_id=' + ApiSetup."Client Id" + '&Scope=' + ApiSetup.Scope + '&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion=' + ClientAssertion
         end;

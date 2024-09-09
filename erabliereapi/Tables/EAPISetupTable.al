@@ -34,7 +34,8 @@ table 50125 "EAPI Setup"
 
             trigger OnValidate()
             begin
-                if (Rec."Client Certificate" = '') and (Rec."Client Secret" <> '') then
+                CalcFields("Client Certificate Base64");
+                if "Client Certificate Base64".HasValue() and (Rec."Client Secret" <> '') then
                     Rec."Authentication Method" := Rec."Authentication Method"::"Client Secret";
             end;
         }
@@ -42,9 +43,17 @@ table 50125 "EAPI Setup"
         {
             DataClassification = CustomerContent;
         }
+
+        field(27; "Client Certificate Base64"; Blob)
+        {
+            DataClassification = CustomerContent;
+        }
+
         field(17; "Client Certificate"; Text[150])
         {
             DataClassification = CustomerContent;
+            ObsoleteState = Pending;
+            ObsoleteReason = 'Use "Client Certificate Base64" instead.';
 
             trigger OnValidate()
             var
@@ -92,5 +101,18 @@ table 50125 "EAPI Setup"
     procedure GetAuthenticationToken(ForceRenewal: Boolean): Text
     begin
         exit(ApiWebservice.GetFreshAuthenticationToken(Rec, Rec."Token valid until"));
+    end;
+
+    procedure GetCertificateBase64(): Text
+    var
+        inStream: InStream;
+        result: Text;
+    begin
+        CalcFields("Client Certificate Base64");
+        if "Client Certificate Base64".HasValue() then begin
+            "Client Certificate Base64".CreateInStream(inStream);
+            inStream.ReadText(result);
+        end;
+        exit(result);
     end;
 }

@@ -1,17 +1,5 @@
 codeunit 50148 HttpAuthUtils
 {
-    procedure GetCertificate(CertificateCode: Text[20]; Password: Text[20]): Record "Isolated Certificate"
-    var
-        IsolatedCertificat: Record "Isolated Certificate";
-        CertificateManagment: Codeunit "Certificate Management";
-        SignatureKey: Codeunit "Signature Key";
-    begin
-        if not IsolatedCertificat.Get(CertificateCode) then
-            Error('ErabliereAPI.GetCertificate::Error: Certificate not found');
-
-        exit(IsolatedCertificat);
-    end;
-
     procedure EncodeUrlBase64(JsonObject: JsonObject): Text
     var
         JsonText: Text;
@@ -46,9 +34,8 @@ codeunit 50148 HttpAuthUtils
         exit(Base64Text);
     end;
 
-    procedure Computext5sha256(Cert: Record "Isolated Certificate"; SignatureKey: Codeunit "Signature Key"): Text
+    procedure Computext5sha256(certBase64: Text): Text
     var
-        CertificateManagment: Codeunit "Certificate Management";
         CryptographyManagement: Codeunit "Cryptography Management";
         HashAlgorithmType: Option MD5,SHA1,SHA256,SHA384,SHA512;
         certRawData: Text;
@@ -56,18 +43,14 @@ codeunit 50148 HttpAuthUtils
         certHashBase64: Text;
         x5t: Text;
     begin
-        CertificateManagment.GetCertPrivateKey(Cert, SignatureKey);
-
-        certRawData := CertificateManagment.GetRawCertDataAsBase64String(Cert);
-
-        certHash := CryptographyManagement.GenerateHashAsBase64String(certRawData, 2);
+        certHash := CryptographyManagement.GenerateHashAsBase64String(certBase64, HashAlgorithmType::SHA256);
 
         x5t := EncodeUrl(certHash);
 
         exit(x5t);
     end;
 
-    procedure ComputeClientAssertion(ApiSetup: Record "EAPI Setup"; Cert: Record "Isolated Certificate"): Text
+    procedure ComputeClientAssertion(ApiSetup: Record "EAPI Setup"): Text
     var
         JwtHeader: JsonObject;
         JwtPayload: JsonObject;
@@ -95,7 +78,7 @@ codeunit 50148 HttpAuthUtils
         JwtHeader.Add('typ', 'JWT');
 
         if ApiSetup."x5t#S256" = '' then
-            x5t := Computext5sha256(Cert, SignatureKey)
+            x5t := Computext5sha256(ApiSetup.GetCertificateBase64())
         else
             x5t := ApiSetup."x5t#S256";
 
@@ -114,27 +97,28 @@ codeunit 50148 HttpAuthUtils
 
         JwtTokenText := JwtHeaderBase64 + '.' + JwtPayloadBase64;
 
-        JwtSignature := CreateJwtSignature(JwtTokenText, Cert);
+        JwtSignature := CreateJwtSignature(JwtTokenText, ApiSetup.GetCertificateBase64(), ApiSetup."Client Certificate Password");
 
         JwtTokenText := JwtTokenText + '.' + JwtSignature;
 
         exit(JwtTokenText);
     end;
 
-    procedure CreateJwtSignature(JwtTokenText: Text; Cert: Record "Isolated Certificate"): Text
+    procedure CreateJwtSignature(JwtTokenText: Text; Cert: Text; Password: Text): Text
     var
         TempBlob: Codeunit "Temp Blob";
         JwtSignature: Text;
         JwtSignatureBase64: Text;
         CryptographyManagement: Codeunit "Cryptography Management";
-        CertificateManagement: Codeunit "Certificate Management";
+        X509Certificate2: Codeunit "X509Certificate2";
         HashAlgorithm: Enum "Hash Algorithm";
         OutStream: OutStream;
         InStream: InStream;
         SignKey: Codeunit "Signature Key";
     begin
         OutStream := TempBlob.CreateOutStream();
-        CertificateManagement.GetCertPrivateKey(Cert, SignKey);
+        SignKey.Run();
+        SignKey.FromBase64String(Cert, Password, true);
         CryptographyManagement.SignData(JwtTokenText, SignKey, HashAlgorithm::SHA256, OutStream);
         InStream := TempBlob.CreateInStream();
         InStream.ReadText(JwtSignature);

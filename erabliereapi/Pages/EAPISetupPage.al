@@ -49,9 +49,26 @@ page 50132 "EAPI Setup Page"
                     ApplicationArea = All;
                     ExtendedDatatype = Masked;
                 }
-                field("Client Certificate"; Rec."Client Certificate")
+                field("Edit Client Certificate"; editCert)
                 {
                     ApplicationArea = All;
+                }
+                field("Client Certificate Base64"; certificateContent)
+                {
+                    ApplicationArea = All;
+                    MultiLine = true;
+                    Editable = editCert;
+
+                    trigger OnValidate()
+                    var
+                        outStream: OutStream;
+                        x509Certificate: Codeunit X509Certificate2;
+                    begin
+                        Rec."Client Certificate Base64".CreateOutStream(outStream);
+                        outStream.WriteText(certificateContent);
+
+                        ClearCertificateHashes();
+                    end;
                 }
                 field("Client Certificate Password"; Rec."Client Certificate Password")
                 {
@@ -145,7 +162,8 @@ page 50132 "EAPI Setup Page"
 
     procedure CalculateCertificateHashes()
     var
-        Cert: Record "Isolated Certificate";
+        X509Certificate2: Codeunit X509Certificate2;
+        PrivateKey: Text;
         SignKey: Codeunit "Signature Key";
         CertMgmnt: Codeunit "Certificate Management";
         Crypto: Codeunit "Cryptography Management";
@@ -153,28 +171,58 @@ page 50132 "EAPI Setup Page"
         certData: Text;
     // MD5, SHA1, SHA256, SHA384, and SHA512
     begin
-        if (Rec."Client Certificate" <> '') and (Cert.Get(Rec."Client Certificate")) then begin
+        Rec.CalcFields("Client Certificate Base64");
+        if (Rec."Client Certificate Base64".HasValue()) then begin
 
-            certData := CertMgmnt.GetRawCertDataAsBase64String(Cert);
-            CertMgmnt.GetCertPrivateKey(Cert, SignKey);
+            certData := Rec.GetCertificateBase64();
+
+            PrivateKey := X509Certificate2.GetCertificatePrivateKey(certData, Rec."Client Certificate Password");
 
             MD5 := Crypto.GenerateHash(certData, 0);
             SHA1 := Crypto.GenerateHash(certData, 1);
             SHA256 := Crypto.GenerateHash(certData, 2);
-            xt5tS256 := HttpUtils.Computext5sha256(Cert, SignKey);
+            xt5tS256 := HttpUtils.Computext5sha256(certData);
             SHA384 := Crypto.GenerateHash(certData, 3);
             SHA512 := Crypto.GenerateHash(certData, 4);
 
             MD5Base64 := Crypto.GenerateHashAsBase64String(certData, 0);
             SHA1Base64 := Crypto.GenerateHashAsBase64String(certData, 1);
             SHA256Base64 := Crypto.GenerateHashAsBase64String(certData, 2);
-            xt5tS256Base64 := HttpUtils.Computext5sha256(Cert, SignKey);
+            xt5tS256Base64 := HttpUtils.Computext5sha256(certData);
             SHA384Base64 := Crypto.GenerateHashAsBase64String(certData, 3);
             SHA512Base64 := Crypto.GenerateHashAsBase64String(certData, 4);
-        end;
+        end
+        else
+            ClearCertificateHashes();
+    end;
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        certificateContent := Rec.GetCertificateBase64();
+        CalculateCertificateHashes();
+    end;
+
+    local procedure ClearCertificateHashes()
+    begin
+        MD5 := '';
+        SHA1 := '';
+        SHA256 := '';
+        xt5tS256 := '';
+        SHA384 := '';
+        SHA512 := '';
+
+        MD5Base64 := '';
+        SHA1Base64 := '';
+        SHA256Base64 := '';
+        xt5tS256Base64 := '';
+        SHA384Base64 := '';
+        SHA512Base64 := '';
     end;
 
     var
+        certificateContent: Text;
+        editCert: Boolean;
+
         MD5: Text;
         SHA1: Text;
         SHA256: Text;
