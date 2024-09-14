@@ -149,6 +149,42 @@ page 50132 "EAPI Setup Page"
         }
     }
 
+    actions
+    {
+        area(Processing)
+        {
+            action("Refresh token")
+            {
+                ApplicationArea = All;
+                Promoted = true;
+                PromotedCategory = Process;
+                Image = Refresh;
+                Enabled = true;
+                trigger OnAction()
+                begin
+                    Rec.GetAuthenticationToken(true);
+                end;
+            }
+
+            action("Test connection")
+            {
+                ApplicationArea = All;
+                Promoted = true;
+                PromotedCategory = Process;
+                Image = TestDatabase;
+                Enabled = true;
+                trigger OnAction()
+                var
+                    HttpClient: HttpClient;
+                    Resp: HttpResponseMessage;
+                begin
+                    HttpClient.Get(Rec."API URL" + '/Erablieres', Resp);
+                    Message(Resp.ReasonPhrase);
+                end;
+            }
+        }
+    }
+
     trigger OnAfterGetRecord()
     begin
         CalculateCertificateHashes();

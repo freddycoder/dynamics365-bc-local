@@ -88,6 +88,8 @@ codeunit 50126 "API Web Service"
 
         RequestMessage.Content := RequestContent;
 
+        WebClient.Timeout := 20000;
+
         //Send webservice query
         WebClient.Send(RequestMessage, ResponseMessage);
 

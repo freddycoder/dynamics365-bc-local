@@ -5,6 +5,11 @@ codeunit 50140 ErabliereAPI
         exit(GetList('/Erablieres'));
     end;
 
+    procedure GetErabliere(top: Integer): JsonArray
+    begin
+        exit(GetList('/Erablieres&$top=' + Format(top)));
+    end;
+
     procedure GetAdminErabliere(): JsonArray
     begin
         exit(GetList('/Admin/Erablieres'));
@@ -25,7 +30,8 @@ codeunit 50140 ErabliereAPI
         HttpAuthUtils: Codeunit "API Web Service";
         APIConfig: Record "EAPI Setup";
     begin
-        APIConfig.FindSet();
+        if not APIConfig.FindSet() then
+            Error('ErabliereAPI.GetList(%1)::Error: %2', url, 'No API Configuration found');
 
         Token := HttpAuthUtils.GetAuthenticationToken(APIConfig, APIConfig."Force Token Renewal");
 
